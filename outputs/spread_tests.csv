@@ -1,0 +1,12 @@
+feature,kind,n_with,mean_with,mean_without,stat,p
+numbers_changed,mannwhitney,139,1.712,1.691,,0.186
+prefix_added,mannwhitney,176,1.5,1.736,,0.6234
+suffix_added,mannwhitney,155,1.606,1.71,,0.2223
+url_added,mannwhitney,27,1.37,1.703,,0.8689
+cta_added,mannwhitney,35,1.6,1.698,,0.565
+cta_removed,mannwhitney,22,1.864,1.69,,0.1186
+edit_size,spearman,984,,,-0.053,0.098
+words_added,spearman,984,,,-0.022,0.4896
+words_removed,spearman,984,,,0.031,0.3314
+words_replaced,spearman,984,,,-0.047,0.1402
+real_rewrites,spearman,984,,,-0.058,0.0688

@@ -1,0 +1,56 @@
+
+##### header added  (60 candidates)
+-- family 3355
+   insert: '' -> 'Listen to this audio until the end.'
+   replace: "mimimi... we're" -> 'mimimi, we are'
+-- family 7138
+   insert: '' -> 'globe news'
+   replace: 'cosme from globenews on the agenda. Do' -> 'cosme: do'
+-- family 3567
+   replace: 'Yes, it still has' -> 'As I said, yes, there are'
+   replace: "that's" -> 'that is'
+
+##### footer added  (66 candidates)
+-- family 5039
+   delete: 'manufactures huge, where joão doria is a shareholder working full steam ...' -> ''
+   insert: '' -> 'where doria is a shareholder, the work is in full steam.'
+-- family 2169
+   insert: '' -> 'the most read of the week'
+   replace: '16-year-old' -> '16 year old'
+-- family 5303
+   replace: 'ex-ministro' -> 'the doctor and former minister'
+   insert: '' -> 'worth listening to the audio until the end!!'
+
+##### numbers replaced (strict rule)  (82 candidates)
+-- family 11254
+   numbers in original: ['05', '2020']
+   numbers in variant : ['12', '2020']
+   context: morning prayer on April 05, 2020 access the link below to listen
+-- family 7198
+   numbers in original: ['00', '1', '1.760']
+   numbers in variant : ['00', '04', '07', '1.200', '2020', '600,00']
+   context: government has just released the schedule of the gurts sack in the value of r$1,760.00 the schedule must be made in the official app, after the schedule the gur
+-- family 2750
+   numbers in original: ['6']
+   numbers in variant : ['2']
+   context: coronavirus newsletter in maringa on April 6 via the journal maringa see in
+
+##### sentence/words dropped  (64 candidates)
+-- family 5694
+   replace: 'this' -> 'This'
+   replace: "let's" -> "Let's"
+-- family 13939
+   delete: 'extinction of itab victory control plants in the midst of the covid-19 pandemic. about 80 employees ' -> ''
+-- family 5776
+   delete: "I'm gonna send you an audio from a acquaintance who" -> ''
+   replace: 'labor' -> 'works'
+
+##### words substituted  (146 candidates)
+-- family 12786
+   replace: 'here.' -> 'okay.'
+   replace: 'thanks' -> 'better now talking'
+-- family 12428
+   replace: '28' -> '31'
+-- family 8203
+   replace: 'chloroquine/hydroxychloroquine' -> 'chloroquine'
+   delete: 'the' -> ''

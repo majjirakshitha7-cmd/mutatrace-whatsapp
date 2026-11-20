@@ -1,0 +1,4 @@
+tfidf_th,families,variant_pairs,largest_family,header_added,footer_added,numbers_changed,words_rewritten,rho_edit_size_vs_sharings,auc_logreg,partial_rho_rewrites,ci_low,ci_high
+0.5,716,1165,15,0.174,0.146,0.142,0.543,-0.054,0.49,-0.089,-0.144,-0.058
+0.6,604,984,15,0.179,0.158,0.141,0.479,-0.053,0.528,-0.099,-0.157,-0.04
+0.7,545,870,15,0.189,0.154,0.141,0.434,-0.075,0.531,-0.087,-0.145,-0.033

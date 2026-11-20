@@ -1,0 +1,11 @@
+measure,test,covid,non_covid,effect,p
+header_added,fisher,0.264,0.142,2.18,0.0
+words_added>3,fisher,0.415,0.236,2.29,0.0
+real_rewrite>3,fisher,0.555,0.445,1.56,0.0018
+words_dropped>3,fisher,0.234,0.188,1.32,0.1019
+numbers_changed,fisher,0.127,0.147,0.84,0.4272
+footer_added,fisher,0.171,0.152,1.15,0.4486
+add_rate,mannwhitney (length-fair),0.006,0.0,,0.0162
+drop_rate,mannwhitney (length-fair),0.0,0.0,,0.686
+rewrite_rate,mannwhitney (length-fair),0.038,0.058,,0.1424
+edit_size,mannwhitney (length-fair),0.098,0.17,,0.0

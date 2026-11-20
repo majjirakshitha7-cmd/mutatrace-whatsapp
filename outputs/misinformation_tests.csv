@@ -1,0 +1,12 @@
+measure,test,misinfo_share,non_misinfo_share,odds_ratio,p_value
+cta_urgency_added,fisher,0.067,0.026,2.67,0.0066
+header_added,fisher,0.251,0.158,1.79,0.002
+words_added>3,fisher,0.408,0.256,2.0,0.0
+real_rewrite>3,fisher,0.565,0.453,1.57,0.0037
+footer_added,fisher,0.188,0.148,1.33,0.1738
+numbers_changed,fisher,0.121,0.147,0.8,0.3818
+words_dropped>3,fisher,0.238,0.192,1.31,0.1547
+edit_size,mannwhitney,0.074,0.175,-0.1,0.0
+add_rate,mannwhitney,0.006,0.0,-0.012,0.0707
+rewrite_rate,mannwhitney,0.028,0.067,-0.098,0.0003
+drop_rate,mannwhitney,0.0,0.0,-0.024,0.1802

@@ -1,0 +1,6 @@
+detector,should_fire_on,n_true,n_other,recall,precision,false_positive_rate
+header_added,header_added,400,2099,1.0,0.897,0.022
+footer_added,footer_added,400,2099,1.0,0.988,0.002
+numbers_changed,numbers_changed,127,2372,1.0,0.498,0.054
+numbers_replaced (strict),numbers_changed,127,2372,1.0,1.0,0.0
+words_dropped>3,drop_15pct+drop_30pct+truncate_60pct,1187,1312,0.848,0.856,0.129

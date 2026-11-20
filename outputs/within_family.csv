@@ -1,0 +1,4 @@
+feature,raw_rho,partial_rho,ci_low,ci_high
+real_rewrites,-0.138,-0.099,-0.152,-0.046
+words_added,-0.092,-0.052,-0.108,0.009
+rewrite_rate,-0.067,-0.078,-0.12,-0.034

@@ -1,0 +1,11 @@
+pandas
+numpy
+scipy
+scikit-learn
+matplotlib
+sentence-transformers
+# optional, only for the English-translation stage:
+# transformers
+# sentencepiece
+# dev:
+# pytest
