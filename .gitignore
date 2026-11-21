@@ -6,3 +6,5 @@ data/raw/*
 data/processed/*.npz
 data/processed/*.npy
 .pytest_cache/
+desktop.ini
+.vscode/

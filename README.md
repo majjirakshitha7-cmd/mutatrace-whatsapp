@@ -1,102 +1,239 @@
 # Mutation Analysis of Forwarded WhatsApp Messages
 
-NLP capstone project. Forwarded messages change as they are copied: words are dropped,
-numbers altered, headers and footers added. This project
+NLP capstone project investigating how viral forwarded messages mutate across peer-to-peer networks: words dropped, numbers altered, calls-to-action injected, and institutional headers added.
 
-1. groups near-duplicate messages into **variant families**,
-2. measures **how each variant was edited** compared with the earliest message of its family,
-3. tests whether the type or size of an edit is **associated with how widely the message circulated**.
+This project:
+1. Groups near-duplicate messages into **variant families** via mutual $k$-nearest-neighbor clustering.
+2. Measures **how each variant was edited** compared with the earliest message of its family using word-level diff analysis.
+3. Tests whether the type or size of an edit is **associated with how widely the message circulated** (diffusion dynamics & virality).
+4. Evaluates **fact-checking evasion**, quantifying coverage recovery when linking variant cascades to verified claim databases.
 
-Data: [COVID19.BR](https://zenodo.org/records/5193932) (WhatsApp messages from public groups in Brazil,
-Oct 2018 - Jun 2020). The text is Brazilian Portuguese; examples can be machine-translated to English
-(`--stage translate`). All numbers are computed on the original text.
+**Dataset:** [COVID19.BR](https://zenodo.org/records/5193932) (WhatsApp messages from Brazilian public groups, Oct 2018 – Jun 2020). The source text is Brazilian Portuguese; sample pairs can be translated to English (`--stage translate`). All statistics and diff features are computed on the original text.
 
-## Project structure
+---
+
+## Project Structure
 
 ```
-run_pipeline.py        one command runs every stage
-build_explorer.py      generates standalone interactive HTML explorer
+run_pipeline.py            Main CLI entrypoint to run any or all stages
+build_explorer.py          Generates standalone interactive HTML diff explorer
+report_examples.py         Prints sample mutated variant pairs by edit type
+requirements.txt           Python package dependencies
+Report.pdf                 Complete academic capstone report (PDF)
+
 src/
-  config.py            paths, thresholds, regex patterns
-  data.py              load, clean, collapse duplicates, remove spam
-  cluster.py           TF-IDF / MiniLM embeddings, mutual-nearest-neighbour clustering
-  evaluate.py          synthetic benchmark (planted mutations with known answers)
-  mutations.py         word-level diff features per variant
-  analysis.py          statistical tests, spread prediction, COVID comparison
-  misinformation.py    fact-checking propagation and misinformation mutation tests
-  plots.py             report figures
-  extras.py            detector validation, hybrid clustering, threshold sensitivity
-  translate.py         optional English translation of examples
-tests/                 unit tests
-data/raw/              put covid19br.csv and covidbr_labeled.csv here
-data/processed/        intermediate files (created by the pipeline)
-outputs/               tables, figures, and variant_explorer.html
-notebooks/             exploration notebooks (optional)
-REPORT.md              complete academic capstone report
+  config.py                Paths, thresholds, hyperparameters, and regex patterns
+  data.py                  Load, clean, collapse exact duplicates, and filter spam/ASCII
+  cluster.py               TF-IDF / MiniLM embeddings + mutual-kNN graph clustering
+  evaluate.py              Synthetic benchmark generator (planted edits with known ground truth)
+  mutations.py             Word-level diff feature extraction per variant pair
+  analysis.py              Statistical tests, spread prediction, and COVID comparison
+  misinformation.py        Fact-checking propagation and misinformation mutation tests
+  plots.py                 Generates high-resolution report figures
+  extras.py                Detector validation, hybrid clustering, threshold sensitivity
+  translate.py             Optional machine translation of examples to English
+
+tests/                     Unit test suite (pytest)
+data/
+  raw/                     Source datasets (covid19br.csv, covidbr_labeled.csv)
+  processed/               Precomputed intermediate CSVs (bundled with repo)
+outputs/                   Generated tables (.csv), figures (.png), and variant_explorer.html
+notebooks/                 Exploratory notebooks
 ```
 
-## Setup (Linux / Ubuntu)
+---
 
+## Setup & Installation (Windows - VS Code Terminal)
+
+Open your project folder in **Visual Studio Code**. Open the integrated terminal using <kbd>Ctrl</kbd> + <kbd>`</kbd> (backtick) or go to menu **Terminal &rarr; New Terminal**. By default, VS Code opens **PowerShell**.
+
+### 1. Create and Activate Virtual Environment
+
+#### In PowerShell (Default VS Code Terminal):
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
 ```
-python3 -m venv venv
-source venv/bin/activate
+
+> **Note on PowerShell Execution Policy:**  
+> If you get an error saying `File ... Activate.ps1 cannot be loaded because running scripts is disabled on this system`, allow script execution for the current terminal session by running:
+> ```powershell
+> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+> .\venv\Scripts\Activate.ps1
+> ```
+
+#### In Command Prompt (`cmd.exe`):
+If your VS Code terminal profile is set to Command Prompt:
+```cmd
+python -m venv venv
+.\venv\Scripts\activate.bat
+```
+
+> **VS Code Tip:** Select your virtual environment interpreter in VS Code by pressing <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>, typing `Python: Select Interpreter`, and choosing `.\venv\Scripts\python.exe`.
+
+### 2. Install Dependencies
+
+Upgrade `pip` and install the required packages:
+```powershell
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
-Download `covid19br.csv` from the Zenodo link above into `data/raw/`.
 
-## Run
-
-```
-python run_pipeline.py                    # all stages (downloads the MiniLM model on first run)
-python run_pipeline.py --no-embeddings    # TF-IDF only: fast, no model download
-python run_pipeline.py --stage analyze    # a single stage
-python run_pipeline.py --stage translate  # optional: English examples (needs transformers, sentencepiece)
+*(Optional)* If you plan to run unit tests:
+```powershell
+pip install pytest
 ```
 
-Stages: `prepare -> cluster -> evaluate -> mutations -> analyze -> extras -> misinformation -> plots`.
-Each stage reads the previous stage's file from `data/processed/`, so you can re-run one stage alone.
+*(Optional)* If you want to run the English translation stage:
+```powershell
+pip install transformers sentencepiece
+```
 
-## Method summary
+---
 
-- **Cleaning:** drop media placeholders and messages under 10 words; remove URLs and symbols;
-  collapse exact duplicates (keeping counts, groups, sharings, first-seen timestamp);
-  remove group-invite spam and ASCII-art posts.
-- **Clustering:** two messages are linked only if each is among the other's 10 nearest neighbours
-  *and* cosine similarity passes a threshold; connected components are families. TF-IDF (word 1-2 grams)
-  at 0.6 is the main method; multilingual MiniLM embeddings at 0.90 are the comparison.
-- **Evaluation:** no labelled families exist, so 400 real messages get 7 kinds of planted edits
-  (numbers, footer, header, 15% / 30% word drop, truncation, word swaps). A method is scored on whether
-  each variant lands in the same cluster as its source (precision, recall, ARI, recall per edit type).
-- **Mutation features:** difflib word diffs against the earliest message (by date and hour) in the family.
-- **Statistics:** Mann-Whitney / Spearman for edits vs `sharings`; family-grouped cross-validated AUC;
-  partial Spearman controlling for time since the original and length, with a family-level bootstrap CI;
-  Fisher and length-fair tests for COVID vs non-COVID families.
-- **Misinformation & Fact-Checking:** matches variant families against 2,899 fact-checked messages
-  (`covidbr_labeled.csv`), uncovering a +22.1% fact-check coverage boost and finding misinformation variants
-  are 2.67x more likely to add urgency CTAs and 1.79x more likely to prepend authoritative headers.
+## Data Availability & Fast Execution
+
+This repository **includes preprocessed intermediate files** in `data/processed/` (`messages_filtered.csv`, `messages_clustered.csv`, `mutation_pairs_final.csv`, etc.) and all generated figures/tables in `outputs/`.
+
+- You can **immediately run downstream stages** (`evaluate`, `analyze`, `extras`, `misinformation`, `plots`), build the interactive explorer, or run tests without downloading the full 125k message raw dataset.
+- If you wish to re-run the pipeline from scratch starting from raw data:
+  1. Create the `data\raw\` directory:
+     ```powershell
+     New-Item -ItemType Directory -Path "data\raw" -Force
+     ```
+  2. Download `covid19br.csv` from [Zenodo Record 5193932](https://zenodo.org/records/5193932) into `data\raw\`.
+  3. (Optional) Place `covidbr_labeled.csv` (fact-checked claim labels) into `data\raw\`.
+
+---
+
+## Running the Project (Windows Terminal)
+
+All pipeline commands are executed from the root workspace directory.
+
+### 1. Run Pipeline
+
+- **Run all stages** (downloads `paraphrase-multilingual-MiniLM-L12-v2` embedding model on first run):
+  ```powershell
+  python run_pipeline.py
+  ```
+
+- **Run fast mode** (TF-IDF only, skips embedding model download):
+  ```powershell
+  python run_pipeline.py --no-embeddings
+  ```
+
+- **Run a single stage:**
+  ```powershell
+  python run_pipeline.py --stage evaluate          # Synthetic mutation benchmark
+  python run_pipeline.py --stage analyze           # Statistical tests & virality prediction
+  python run_pipeline.py --stage extras            # Detector validation & threshold sensitivity
+  python run_pipeline.py --stage misinformation    # Fact-checking propagation analysis
+  python run_pipeline.py --stage plots             # Generate output figures
+  python run_pipeline.py --stage translate         # Optional: English translations
+  ```
+
+Pipeline stages execute in order:
+$$\text{prepare} \longrightarrow \text{cluster} \longrightarrow \text{evaluate} \longrightarrow \text{mutations} \longrightarrow \text{analyze} \longrightarrow \text{extras} \longrightarrow \text{misinformation} \longrightarrow \text{plots}$$
+
+Because intermediate stage outputs are saved to `data\processed\`, any stage can be independently re-run.
+
+---
+
+### 2. Interactive Variant Explorer
+
+Build and view the standalone interactive HTML explorer containing side-by-side word-level diffs and variant family trees:
+
+```powershell
+# Generate the explorer HTML
+python build_explorer.py
+
+# Open variant_explorer.html in your default web browser from PowerShell
+Start-Process .\outputs\variant_explorer.html
+```
+
+Or right-click `outputs/variant_explorer.html` in VS Code and select **Open with Live Server** / **Reveal in File Explorer**.
+
+---
+
+### 3. Inspect Mutation Examples
+
+Print sample mutated message pairs across different edit categories (headers added, footers added, numbers replaced, words dropped, rewrites):
+
+```powershell
+python report_examples.py
+```
+
+---
+
+### 4. Run Unit Tests
+
+Execute the automated test suite verifying text sanitization, diff parsing, mutual-kNN clustering, and misinformation propagation logic:
+
+```powershell
+pytest tests/
+```
+
+Or using python module syntax:
+```powershell
+python -m pytest tests\ -v
+```
+
+---
+
+## Method Summary
+
+- **Cleaning:** Drops media placeholders (`<Arquivo de mídia oculto>`), system messages, and texts under 10 words. Strips URLs and symbols, collapses exact duplicates (retaining sharings, counts, group IDs, and timestamps), and filters WhatsApp invite links and ASCII-art posts.
+- **Mutual $k$-NN Clustering:** Connects pairs only if each message is within the other's top-$k$ nearest neighbors ($k=10$) *and* cosine similarity exceeds threshold $\theta$. Connected components form variant families. Word/char $n$-gram TF-IDF ($\theta=0.60$) serves as primary method; multilingual MiniLM embeddings ($\theta=0.90$) serve as semantic comparison.
+- **Synthetic Benchmark:** Evaluates clustering against 400 real messages subjected to seven realistic planted edits (numbers altered, footers/headers added, 15%/30% word deletions, sentence truncation, word swaps). Scored via Precision, Recall, Adjusted Rand Index (ARI), and recall per edit type.
+- **Mutation Diff Features:** Computes word-level diffs (`difflib.SequenceMatcher`) against the root message (earliest by timestamp) in each family, extracting additions, deletions, substitutions, spelling corrections vs semantic rewrites, and number modifications.
+- **Statistical & Virality Analysis:** Grouped cross-validated AUC testing whether edits predict virality; partial Spearman correlations controlling for message age and character length; Fisher's exact tests for COVID vs non-COVID mutation patterns.
+- **Misinformation Analysis:** Cross-references variant families with 2,899 fact-checked claims (`covidbr_labeled.csv`), quantifying coverage gains and mutation tactics (urgency CTAs, authority headers).
+
+---
 
 ## Results Summary
 
-All experimental outputs are saved in `outputs/`:
-- `synthetic_eval.csv` & `benchmark_recall.png`: TF-IDF 0.6 achieves 1.0 precision, 0.965 recall, 0.982 ARI.
-- `mutation_shares.csv` & `mutation_types.png`: 47.9% rewrites, 38.7% typos, 17.9% headers, 15.8% footers, 14.1% numbers.
-- `spread_tests.csv` & `within_family.csv`: Edits do not predict virality (AUC ~ 0.50); rewrites correlate negatively with relative within-family spread (partial rho = -0.099).
-- `covid_tests.csv`: COVID-19 messages show 2.18x more headers added and 2.29x more words added.
-- `misinformation_propagation.csv` & `misinformation_tests.csv`: +22.1% fact-check coverage boost; urgency CTAs added at OR = 2.67 (p = 0.0066).
-- `detector_validation.csv` & `hybrid_eval.csv`: Strict number detector achieves 100% precision & 100% recall.
-- `variant_explorer.html`: Interactive browser dashboard to search and view word-level diffs across families.
-- Full details in `REPORT.md`.
+Key empirical results stored in `outputs/`:
+- **Synthetic Evaluation (`synthetic_eval.csv`, `benchmark_recall.png`):** TF-IDF 0.6 achieves **1.0 Precision, 0.965 Recall, 0.982 ARI**, outperforming embeddings (which drop to 0.490 recall on truncation).
+- **Mutation Taxonomy (`mutation_shares.csv`, `mutation_types.png`):** 47.9% rewrites, 38.7% spelling/typos, 17.9% headers added, 15.8% footers added, 14.1% numbers altered.
+- **Diffusion Null Result (`spread_tests.csv`, `within_family.csv`):** Textual mutations do not drive virality ($\text{AUC} \approx 0.50$). Rewrites negatively correlate with relative within-family spread ($\text{partial } \rho = -0.099, p = 0.041$).
+- **Health Crisis Dynamics (`covid_tests.csv`):** COVID-19 messages exhibit $2.18\times$ more added headers and $2.29\times$ more added words.
+- **Fact-Checking Recovery (`misinformation_propagation.csv`, `misinformation_tests.csv`):** Family clustering provides a **$+22.1\%$ boost** in fact-checking coverage; misinformation variants are $2.67\times$ more likely to inject urgency CTAs ($p = 0.0066$) and $1.79\times$ more likely to prepend authority headers ($p = 0.0020$).
+- **Interactive UI (`variant_explorer.html`):** Browser interface to search, filter, and inspect word diffs across families.
+
+> **Report:** For the complete academic writeup with methodology, mathematical formulations, literature review, and extended discussion, refer to [Report.pdf](file:///c:/Users/majji/OneDrive/Attachments/Desktop/nlp_capstone_whatsapp_mutation/Report.pdf).
+
+---
 
 ## Limitations
 
-- Data is Portuguese; the translation stage is machine translation and only for illustration.
-- `sharings` is the dataset authors' spread count; its exact definition should be checked at the source.
-- Mutation types are automatic, overlapping rules and were not manually validated.
-- The synthetic benchmark plants lexical edits, which favours TF-IDF over embeddings; it does not test paraphrase.
-- Lineage trees are approximate (most similar earlier message, not proven copying).
-- The COVID flag is a keyword match; many statistical tests were run, so single small p-values are exploratory.
+- Data is in Portuguese; the translation stage uses machine translation for illustrative purposes.
+- `sharings` is the dataset authors' spread count; its exact logging definition is inherited from the original COVID19.BR collectors.
+- Mutation types are determined by automatic rule heuristics and were not exhaustively hand-labeled.
+- The synthetic benchmark plants lexical edits, which naturally favors $n$-gram TF-IDF over dense embeddings; it does not evaluate deep semantic paraphrasing.
+- Lineage trees represent approximate heuristics (most similar earlier message), not verified causal forwarding chains.
+- COVID-19 categorization relies on regex keyword matching; individual marginal $p$-values are exploratory.
 
-## Future work
+---
 
-Replicate on MultiClaimNet or English/Telugu data, add a paraphrase benchmark for the embedding model,
-and validate the mutation-type rules against a manually labelled sample.
+## Future Work
+
+1. Replicate evaluation across multilingual and English/Telugu WhatsApp and Telegram datasets (e.g., MultiClaimNet).
+2. Incorporate paraphrase-specific synthetic benchmarks to evaluate dense neural encoders.
+3. Validate mutation-type extraction heuristics against human-annotated variant samples.
+
+---
+
+## Windows Troubleshooting & Tips
+
+- **PowerShell Execution Policy Error:** If activating `.\venv\Scripts\Activate.ps1` produces `PSSecurityException`, run:
+  ```powershell
+  Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+  ```
+- **UTF-8 Output in PowerShell:** If Portuguese accent characters display incorrectly in PowerShell, enable UTF-8 console output:
+  ```powershell
+  [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+  $env:PYTHONUTF8 = "1"
+  ```
+- **Path Separators:** Windows supports both backslashes (`\`) and forward slashes (`/`) in Python commands, but in PowerShell, use backslashes (`.\venv\Scripts\Activate.ps1`) when executing local scripts.
+- **Python Launcher:** If `python` is not recognized, try `py -m venv venv` and `py run_pipeline.py`. Ensure Python 3.10+ is added to your system `PATH`.
