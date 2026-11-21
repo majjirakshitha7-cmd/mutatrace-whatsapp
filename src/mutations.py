@@ -4,7 +4,14 @@ import difflib
 import re
 import numpy as np
 import pandas as pd
-from . import config as C
+
+try:
+    from . import config as C
+except ImportError:
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from src import config as C
 
 NUM = re.compile(r"\d+(?:[.,]\d+)?")
 URL = re.compile(r"https?://\S+|www\.\S+")

@@ -10,9 +10,18 @@ from scipy.stats import spearmanr
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import adjusted_rand_score
 from sklearn.metrics.cluster import pair_confusion_matrix
-from . import config as C, analysis, mutations
-from .cluster import knn, labels_from_knn, embed, cluster_sizes, tfidf_vectors
-from .evaluate import make_planted
+
+try:
+    from . import config as C, analysis, mutations
+    from .cluster import knn, labels_from_knn, embed, cluster_sizes, tfidf_vectors
+    from .evaluate import make_planted
+except ImportError:
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from src import config as C, analysis, mutations
+    from src.cluster import knn, labels_from_knn, embed, cluster_sizes, tfidf_vectors
+    from src.evaluate import make_planted
 
 
 # ---------------------------------------------------------------- 1. detectors

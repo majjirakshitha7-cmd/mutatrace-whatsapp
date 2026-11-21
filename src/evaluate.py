@@ -7,8 +7,16 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import adjusted_rand_score
 from sklearn.metrics.cluster import pair_confusion_matrix
-from . import config as C
-from .cluster import knn, labels_from_knn, embed
+
+try:
+    from . import config as C
+    from .cluster import knn, labels_from_knn, embed
+except ImportError:
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from src import config as C
+    from src.cluster import knn, labels_from_knn, embed
 
 FOOTER = "compartilhe com todos os seus contatos agora mesmo"
 HEADER = "atenção urgente leia até o final"

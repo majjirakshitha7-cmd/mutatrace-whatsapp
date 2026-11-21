@@ -8,7 +8,14 @@ from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import GroupKFold, cross_val_predict
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
-from . import config as C
+
+try:
+    from . import config as C
+except ImportError:
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from src import config as C
 
 BINARY = ["numbers_changed", "prefix_added", "suffix_added", "url_added", "cta_added", "cta_removed"]
 CONT = ["edit_size", "words_added", "words_removed", "words_replaced", "real_rewrites"]

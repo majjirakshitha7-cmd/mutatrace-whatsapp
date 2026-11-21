@@ -1,19 +1,31 @@
 """Misinformation analysis: link variant families with fact-checked labels
 from covidbr_labeled.csv to measure fact-checking propagation and compare mutation patterns.
 """
+import sys
+from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.stats import fisher_exact, mannwhitneyu
-from . import config as C, data
+
+try:
+    from . import config as C, data
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from src import config as C, data
 
 LABELED_CSV = C.ROOT / "data" / "raw" / "covidbr_labeled.csv"
 
 
 def load_labeled_data():
     """Load and clean fact-checked messages."""
+    if not LABELED_CSV.exists():
+        raise FileNotFoundError(
+            f"Fact-checking dataset not found at '{LABELED_CSV}'. "
+            "Please ensure 'covidbr_labeled.csv' is placed in 'data/raw/' (downloadable from Zenodo 5193932)."
+        )
     df = pd.read_csv(LABELED_CSV)
     df["clean"] = df["text"].astype(str).map(data.clean_text)
     # Take the consensus label per cleaned text (if any duplicate was marked misinfo, flag it)
@@ -121,3 +133,26 @@ def plot_misinfo_comparison(test_df, path=C.OUT / "misinformation_mutations.png"
     plt.tight_layout()
     plt.savefig(path, dpi=150)
     plt.close()
+
+
+if __name__ == "__main__":
+    pd.set_option("display.width", 250)
+    clustered_path = C.PROC / "messages_clustered.csv"
+    pairs_path = C.PROC / "mutation_pairs_final.csv"
+
+    if not clustered_path.exists() or not pairs_path.exists():
+        print(f"Error: Processed datasets missing in {C.PROC}. Run pipeline first: python run_pipeline.py")
+        sys.exit(1)
+
+    print("Loading clustered data and mutation pairs...")
+    clustered = pd.read_csv(clustered_path, parse_dates=["first_dt"])
+    pairs = pd.read_csv(pairs_path)
+
+    prop_df, fam_misinfo = analyze_propagation(clustered)
+    print("\n== Misinformation Fact-Checking Propagation ==\n", prop_df.to_string(index=False))
+
+    test_df = analyze_misinfo_mutations(pairs, fam_misinfo)
+    print("\n== Misinformation vs Non-Misinformation Mutations ==\n", test_df.to_string(index=False))
+
+    plot_misinfo_comparison(test_df)
+    print(f"\nSaved comparison figure to: {C.OUT / 'misinformation_mutations.png'}")
