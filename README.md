@@ -9,7 +9,7 @@
 
 > **Academic Capstone Project in Natural Language Processing**  
 > **Author:** M Rakshitha (Roll No: 524cs0011)  
-> **Full Report:** [Report.pdf](Report.pdf) *(50-page complete capstone report with mathematical formulations, literature review, and extended discussion)*
+> **Full Report:** [NLP_report.pdf](NLP_report.pdf) *(50-page complete capstone report with mathematical formulations, literature review, and extended discussion)*
 
 ---
 
@@ -530,4 +530,4 @@ If referencing this work or using the pipeline code, please cite the capstone re
 
 ---
 
-*For further inquiries, detailed methodology, and derivations, consult the capstone report: [Report.pdf](Report.pdf).*
+*For further inquiries, detailed methodology, and derivations, consult the capstone report: [NLP_report.pdf](NLP_report.pdf).*
